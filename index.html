@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="shortcut icon" href="#" />
+</head>
+
+<style>
+    .box {
+        padding: 20px;
+        border: 1px solid #999;
+    }
+
+    #deleteBtn {
+        display: none;
+    }
+</style>
+
+<body>
+    <div class="box">
+        <button id="fetch-btn">获取数据</button>
+        <button id="fetch-cache-btn">从缓存获取数据</button>
+        <p>
+            <span>接口数据：</span>
+            <code></code>
+            <button id="deleteBtn">删除</button>
+        </p>
+
+    </div>
+
+</body>
+
+<script>
+    // 使用nodejs模拟后端接口，然后使用service-worker对接口进行离线缓存
+    window.onload = async function () {
+        const getData = () => {
+            return fetch('http://localhost:3000/list').then(res => res.json()).then(data => {
+                document.getElementsByTagName('code')[0].innerHTML = JSON.stringify(data);
+                document.getElementById('deleteBtn').style.display = 'block';
+            })
+        }
+
+        if ('serviceWorker' in navigator) {
+            const registration = navigator.serviceWorker.register('./service-worker.js')
+        }
+
+
+        document.getElementById('fetch-cache-btn').addEventListener('click', function () {
+            navigator.serviceWorker.controller.postMessage({ isCache: true });
+            getData();
+        })
+        document.getElementById('fetch-btn').addEventListener('click', function () {
+            navigator.serviceWorker.controller.postMessage({ isCache: false });
+            getData();
+        })
+
+
+        document.getElementById('deleteBtn').onclick = function () {
+            document.getElementsByTagName('code')[0].innerHTML = ''
+            document.getElementById('deleteBtn').style.display = 'none';
+        }
+    }
+
+</script>
+
+</html>
